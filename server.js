@@ -8,9 +8,6 @@ const { v2: cloudinary } = require('cloudinary');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on http://0.0.0.0:${PORT}`);
-});
 
 // ==================== MIDDLEWARE ====================
 app.use(cors());
@@ -33,49 +30,6 @@ const io = socketIo(server, {
     cors: { origin: "*" },
     transports: ['websocket', 'polling']
 });
-
-// ==================== MONGOOSE CONNECTION ====================
-mongoose.connect(process.env.MONGODB_URI)
-    .then(async () => {
-        console.log('✅ MongoDB connected');
-        
-        // ==================== SEED DATA DEFAULT ====================
-        const userCount = await User.countDocuments();
-        if (userCount === 0) {
-            console.log('🌱 Seeding default users...');
-            await User.create([
-                { username: "admin", password: "admin123", displayName: "Administrator", isAdmin: true, bio: "Administrator IDB", createdAt: new Date() },
-                { username: "user1", password: "user1123", displayName: "User 1", isAdmin: false, bio: "Pecinta film 🎬", createdAt: new Date() },
-                { username: "user2", password: "user2123", displayName: "User 2", isAdmin: false, bio: "Pecinta film 🎬", createdAt: new Date() }
-            ]);
-        }
-        
-        const filmCount = await Film.countDocuments();
-        if (filmCount === 0) {
-            console.log('🌱 Seeding default films...');
-            await Film.create([
-                { title: "Inception", year: 2010, posterUrl: "https://image.tmdb.org/t/p/w500/edv5CvUikXo6SbSEKkKu8fzRgCU.jpg", trailer: "https://www.youtube.com/watch?v=YoHD9XEInc0", synopsis: "Seorang pencuri yang menyusup ke alam mimpi orang lain untuk mencuri rahasia.", actors: ["Leonardo DiCaprio", "Tom Hardy"], createdAt: new Date() },
-                { title: "Oppenheimer", year: 2023, posterUrl: "https://image.tmdb.org/t/p/w500/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg", trailer: "https://www.youtube.com/watch?v=uYPbbksJxIg", synopsis: "Kisah J. Robert Oppenheimer dalam pengembangan bom atom.", actors: ["Cillian Murphy"], createdAt: new Date() },
-                { title: "Dune: Part Two", year: 2024, posterUrl: "https://image.tmdb.org/t/p/w500/8b8R8l88Qje9dnbOE6h2wniFXIB.jpg", trailer: "https://www.youtube.com/watch?v=U2Qp5pL3ovA", synopsis: "Paul Atreides bersatu dengan Chani dan Fremen untuk membalas dendam.", actors: ["Timothée Chalamet", "Zendaya"], createdAt: new Date() },
-                { title: "Spider-Man: Into the Spider-Verse", year: 2018, posterUrl: "https://image.tmdb.org/t/p/w500/iiZZdoQBEYBv6id8su7ImL0oCbD.jpg", trailer: "https://www.youtube.com/watch?v=g4Hbz2jLxvQ", synopsis: "Remaja Miles Morales menjadi Spider-Man di dimensinya.", actors: [], createdAt: new Date() }
-            ]);
-        }
-        
-        const actorCount = await Actor.countDocuments();
-        if (actorCount === 0) {
-            console.log('🌱 Seeding default actors...');
-            await Actor.create([
-                { name: "Leonardo DiCaprio", bio: "Aktor legendaris Hollywood.", photoUrl: "https://ui-avatars.com/api/?name=Leonardo+DiCaprio&background=667eea&color=fff", createdAt: new Date() },
-                { name: "Tom Hardy", bio: "Aktor asal Inggris.", photoUrl: "https://ui-avatars.com/api/?name=Tom+Hardy&background=667eea&color=fff", createdAt: new Date() },
-                { name: "Cillian Murphy", bio: "Aktor Irlandia.", photoUrl: "https://ui-avatars.com/api/?name=Cillian+Murphy&background=667eea&color=fff", createdAt: new Date() },
-                { name: "Timothée Chalamet", bio: "Aktor muda Amerika.", photoUrl: "https://ui-avatars.com/api/?name=Timothée+Chalamet&background=667eea&color=fff", createdAt: new Date() },
-                { name: "Zendaya", bio: "Aktris dan penyanyi Amerika.", photoUrl: "https://ui-avatars.com/api/?name=Zendaya&background=667eea&color=fff", createdAt: new Date() }
-            ]);
-        }
-        
-        console.log('✅ Seeding complete');
-    })
-    .catch(err => console.error('MongoDB error:', err));
 
 // ==================== SCHEMAS ====================
 const UserSchema = new mongoose.Schema({
@@ -452,8 +406,54 @@ app.use((req, res) => {
     res.sendFile('index.html', { root: 'public' });
 });
 
-// ==================== START SERVER ====================
-server.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
-    console.log(`✅ Socket.IO & MongoDB ready`);
-});
+// ==================== MONGOOSE CONNECTION & START SERVER ====================
+mongoose.connect(process.env.MONGODB_URI)
+    .then(async () => {
+        console.log('✅ MongoDB connected');
+        
+        // Seed data (panggil model yang sudah didefinisikan)
+        const userCount = await User.countDocuments();
+        if (userCount === 0) {
+            console.log('🌱 Seeding default users...');
+            await User.create([
+                { username: "admin", password: "admin123", displayName: "Administrator", isAdmin: true, bio: "Administrator IDB", createdAt: new Date() },
+                { username: "user1", password: "user1123", displayName: "User 1", isAdmin: false, bio: "Pecinta film 🎬", createdAt: new Date() },
+                { username: "user2", password: "user2123", displayName: "User 2", isAdmin: false, bio: "Pecinta film 🎬", createdAt: new Date() }
+            ]);
+        }
+        
+        const filmCount = await Film.countDocuments();
+        if (filmCount === 0) {
+            console.log('🌱 Seeding default films...');
+            await Film.create([
+                { title: "Inception", year: 2010, posterUrl: "https://image.tmdb.org/t/p/w500/edv5CvUikXo6SbSEKkKu8fzRgCU.jpg", trailer: "https://www.youtube.com/watch?v=YoHD9XEInc0", synopsis: "Seorang pencuri yang menyusup ke alam mimpi orang lain untuk mencuri rahasia.", actors: ["Leonardo DiCaprio", "Tom Hardy"], createdAt: new Date() },
+                { title: "Oppenheimer", year: 2023, posterUrl: "https://image.tmdb.org/t/p/w500/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg", trailer: "https://www.youtube.com/watch?v=uYPbbksJxIg", synopsis: "Kisah J. Robert Oppenheimer dalam pengembangan bom atom.", actors: ["Cillian Murphy"], createdAt: new Date() },
+                { title: "Dune: Part Two", year: 2024, posterUrl: "https://image.tmdb.org/t/p/w500/8b8R8l88Qje9dnbOE6h2wniFXIB.jpg", trailer: "https://www.youtube.com/watch?v=U2Qp5pL3ovA", synopsis: "Paul Atreides bersatu dengan Chani dan Fremen untuk membalas dendam.", actors: ["Timothée Chalamet", "Zendaya"], createdAt: new Date() },
+                { title: "Spider-Man: Into the Spider-Verse", year: 2018, posterUrl: "https://image.tmdb.org/t/p/w500/iiZZdoQBEYBv6id8su7ImL0oCbD.jpg", trailer: "https://www.youtube.com/watch?v=g4Hbz2jLxvQ", synopsis: "Remaja Miles Morales menjadi Spider-Man di dimensinya.", actors: [], createdAt: new Date() }
+            ]);
+        }
+        
+        const actorCount = await Actor.countDocuments();
+        if (actorCount === 0) {
+            console.log('🌱 Seeding default actors...');
+            await Actor.create([
+                { name: "Leonardo DiCaprio", bio: "Aktor legendaris Hollywood.", photoUrl: "https://ui-avatars.com/api/?name=Leonardo+DiCaprio&background=667eea&color=fff", createdAt: new Date() },
+                { name: "Tom Hardy", bio: "Aktor asal Inggris.", photoUrl: "https://ui-avatars.com/api/?name=Tom+Hardy&background=667eea&color=fff", createdAt: new Date() },
+                { name: "Cillian Murphy", bio: "Aktor Irlandia.", photoUrl: "https://ui-avatars.com/api/?name=Cillian+Murphy&background=667eea&color=fff", createdAt: new Date() },
+                { name: "Timothée Chalamet", bio: "Aktor muda Amerika.", photoUrl: "https://ui-avatars.com/api/?name=Timothée+Chalamet&background=667eea&color=fff", createdAt: new Date() },
+                { name: "Zendaya", bio: "Aktris dan penyanyi Amerika.", photoUrl: "https://ui-avatars.com/api/?name=Zendaya&background=667eea&color=fff", createdAt: new Date() }
+            ]);
+        }
+        
+        console.log('✅ Seeding complete');
+        
+        // START SERVER - HANYA SEKALI di sini
+        server.listen(PORT, '0.0.0.0', () => {
+            console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);
+            console.log(`✅ Socket.IO & MongoDB ready`);
+        });
+    })
+    .catch(err => {
+        console.error('MongoDB error:', err);
+        process.exit(1);
+    });

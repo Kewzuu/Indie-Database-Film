@@ -8,12 +8,15 @@ const { v2: cloudinary } = require('cloudinary');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 // ==================== MIDDLEWARE ====================
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static('public'));
+
+app.get('/health', (req, res) => res.send('OK'));
 
 // ==================== CLOUDINARY CONFIG ====================
 cloudinary.config({
